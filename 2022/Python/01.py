@@ -1,5 +1,5 @@
 # Read information out of file into list
-with open("input/day1.txt", "r") as input_file:
+with open("2022/Inputs/01.txt", "r") as input_file:
     input_str: list[str] = input_file.readlines()
 
 # Strip newline characters from input
