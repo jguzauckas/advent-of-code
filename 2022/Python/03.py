@@ -25,6 +25,7 @@ def find_similar_p1(inp: tuple[str, ...]) -> str:
     for chr in inp[0]:
         if chr in inp[1]:
             return chr
+    return ""
 
 
 # Function to find the shared character in three tuples of two strings
@@ -32,6 +33,7 @@ def find_similar_p2(inp: tuple[str, ...]) -> str:
     for chr in inp[0]:
         if chr in inp[1] and chr in inp[2]:
             return chr
+    return ""
 
 
 # Go through split input and calculate part 1
