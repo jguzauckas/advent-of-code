@@ -8,7 +8,7 @@ for pos, item in enumerate(input_str):
 
 # Take each line of the input and turn it into a two string tuple
 # Make a list of all of these tuples
-input: list[tuple()] = []
+input: list[tuple] = []
 for inp in input_str:
     temp = inp.split(" ")
     input.append(tuple(temp))
@@ -22,7 +22,7 @@ coded_moves_p1 = {
     "Y": "Paper",
     "Z": "Scissors",
 }
-part1: list[tuple()] = []
+part1: list[tuple] = []
 
 coded_moves_p2 = {
     "A": "Rock",
@@ -32,7 +32,7 @@ coded_moves_p2 = {
     "Y": "Draw",
     "Z": "Win",
 }
-part2: list[tuple()] = []
+part2: list[tuple] = []
 
 for tup in input:
     opp, me = tup[0], tup[1]
