@@ -27,27 +27,64 @@ public class Day1 {
 		return strArray;
 	}
 
+	// Calculate the calibration number based on a provided String.
     public static int calibrationNumber(String str) {
         int value = 0;
-        for (int i = 0; i < str.length(); i++) {
-            if (Integer.valueOf(str.substring(i, i+1)) == NumberFormatException)
-        }
+        str = str.replaceAll("[^0-9]", "");
+		value += 10 * Integer.parseInt(str.substring(0, 1));
+		value += Integer.parseInt(str.substring(str.length() - 1));
+		return value;
     }
 
     // Get the calibration numbers for each String in the input and return the array of them.
-    public static int[] calibrationNumbers(String[] strArray) {
+    public static int[] calibrationNumbersPart1(String[] strArray) {
         int[] values = new int[strArray.length];
         for (int i = 0; i < strArray.length; i++) {
-            for (int j = 0; j < strArray[i].length(); j++) {
-                if (strArray[i])
-            }
+            values[i] = calibrationNumber(strArray[i]);
         }
+		return values;
     }
+
+	// Replaces words of the digits with the digits themselves.
+	// Includes keeping the first/last letters of the digit in case it is included in another digit word.
+	public static String part2Modification(String str) {
+		String[] numbers = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"};
+		for (int i = 0; i < numbers.length; i++) {
+			while (str.contains(numbers[i])) {
+				str = str.substring(0, str.indexOf(numbers[i])) + numbers[i].charAt(0) + (i + 1) + numbers[i].charAt(numbers[i].length() - 1) + str.substring(str.indexOf(numbers[i]) + numbers[i].length());
+			}
+		}
+		return str;
+	}
+
+	// Same as Part 1, but calls part2Modification on the strings before they are converted to numbers.
+	public static int[] calibrationNumbersPart2(String[] strArray) {
+		int[] values = new int[strArray.length];
+        for (int i = 0; i < strArray.length; i++) {
+            values[i] = calibrationNumber(part2Modification(strArray[i]));
+        }
+		return values;
+	}
+
+	// Sum the elements of an integer array.
+	public static int sumArray(int[] intArray) {
+		int sum = 0;
+		for (int i = 0; i < intArray.length; i++) {
+			sum += intArray[i];
+		}
+		return sum;
+	}
 	
 	public static void main(String[] args){
-		String[] calibrationDocument = readIn("input.txt");
+		String[] calibrationDocument = readIn("2023/Inputs/Day1.txt");
 
-        int[] calibrationValues = calibrationNumbers(calibrationDocument);
+        int[] calibrationValuesPart1 = calibrationNumbersPart1(calibrationDocument);
+
+		System.out.println("Part 1: " + sumArray(calibrationValuesPart1));
+
+		int[] calibrationValuesPart2 = calibrationNumbersPart2(calibrationDocument);
+
+		System.out.println("Part 2: " + sumArray(calibrationValuesPart2));
 	}
 
 }
