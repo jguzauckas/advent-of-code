@@ -3,9 +3,7 @@ import re, math
 # Read String from file
 str_inp = open('2024/Inputs/03.txt', 'r').read()
 
-# Regex flags
-number_search_term = re.compile("\\d+") # Find any single digit or larger number
-# Find any mul, do, or don't operation, with grouping for numbers from mul
+# Regex flag to find any mul, do, or don't operation, with grouping for numbers from mul
 all_function_search = re.compile(r"(mul\((\d+),(\d+)\)|do\(\)|don't\(\))")
 
 part_1, part_2, enable = 0, 0, True # Set up sums for solutions and flag for part 2
