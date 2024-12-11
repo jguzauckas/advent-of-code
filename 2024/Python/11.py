@@ -1,26 +1,35 @@
-import math
+from collections import defaultdict
 
 str_inp = open("2024/Inputs/11.txt", "r").readline()
 
-stones = []
+stones = defaultdict(int)
 for str_num in str_inp.split(" "):
-    stones.append(int(str_num))
+    stones[int(str_num)] += 1
 
-for i in range(25):
-    stone_index = 0
-    while stone_index < len(stones):
-        current_stone = stones[stone_index]
-        if current_stone == 0:
-            stones[stone_index] = 1
-        elif int(math.log10(current_stone)) % 2 + 1 == 0:
-            str_stone = str(current_stone)
-            print(str_stone)
-            stones.insert(stone_index, int(str_stone[:len(str_stone) // 2]))
-            stone_index += 1
-            stones[stone_index] = int(str_stone[len(str_stone) // 2 + 1:])
+def str_to_int(s):
+    exponent = 0
+    num = 0
+    for x in reversed(s):
+        num += int(x) * 10 ** exponent
+        exponent += 1
+    return num
+
+def blink(current_stones):
+    next_stones = defaultdict(int)
+
+    for stone, count in current_stones.items():
+        if stone == 0:
+            next_stones[1] += count
+        elif len(str(stone)) % 2 == 0:
+            next_stones[str_to_int(str(stone)[:len(str(stone)) // 2])] += count
+            next_stones[str_to_int(str(stone)[len(str(stone)) // 2:])] += count
         else:
-            stones[stone_index] *= 2024
-        stone_index += 1
+            next_stones[stone * 2024] += count
+    
+    return next_stones
 
-print(stones)
-print(len(stones))
+for i in range(75):
+    stones = blink(stones)
+    if i == 24:
+        print(f"Part 1: {sum(stones.values())}")
+print(f"Part 2: {sum(stones.values())}")
