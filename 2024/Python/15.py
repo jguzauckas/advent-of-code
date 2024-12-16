@@ -47,7 +47,6 @@ for instruction in instructions:
         while warehouse_map[end_y][end_x] == "O":
             end_y += directions[instruction][0]
             end_x += directions[instruction][1]
-        end_y
         if warehouse_map[end_y][end_x] == "#":
             continue
         if warehouse_map[end_y][end_x] == ".":
@@ -73,32 +72,40 @@ for i in range(len(warehouse_map_2)):
         x = warehouse_map_2[i].index("@")
         break
 
-def check_move_boxes(instruction, y, x, all_boxes):
-    should_move = True
+def check_move_boxes(instruction, y, x, all_boxes, should_move):
     new_y = y + directions[instruction][0]
     new_x = x + directions[instruction][1]
+    if not should_move:
+        return (all_boxes, should_move)
     if warehouse_map_2[new_y][new_x] == "[":
-        all_boxes.union({(new_y, new_x, "[")})
-        all_boxes.union({(new_y, new_x + 1, "]")})
-        all_boxes, should_move = check_move_boxes(instruction, new_y, new_x, all_boxes)
-        all_boxes, should_move = check_move_boxes(instruction, new_y, new_x + 1, all_boxes)
+        all_boxes.update({(new_y, new_x, "[")})
+        all_boxes.update({(new_y, new_x + 1, "]")})
+        all_boxes, should_move = check_move_boxes(instruction, new_y, new_x, all_boxes, should_move)
+        all_boxes, should_move = check_move_boxes(instruction, new_y, new_x + 1, all_boxes, should_move)
         return (all_boxes, should_move)
     if warehouse_map_2[new_y][new_x] == "]":
-        all_boxes.union({(new_y, new_x, "]")})
-        all_boxes.union({(new_y, new_x - 1, "[")})
-        all_boxes, should_move = check_move_boxes(instruction, new_y, new_x, all_boxes)
-        all_boxes, should_move = check_move_boxes(instruction, new_y, new_x - 1, all_boxes)
+        all_boxes.update({(new_y, new_x, "]")})
+        all_boxes.update({(new_y, new_x - 1, "[")})
+        all_boxes, should_move = check_move_boxes(instruction, new_y, new_x, all_boxes, should_move)
+        all_boxes, should_move = check_move_boxes(instruction, new_y, new_x - 1, all_boxes, should_move)
         return (all_boxes, should_move)
     if warehouse_map_2[new_y][new_x] == ".":
         return (all_boxes, should_move)
-    if warehouse_map_2[new_y][new_x] == "#":
-        return (all_boxes, False)
+    return (all_boxes, False)
 
 def move_all_boxes(instruction, all_boxes):
+    old_locations = []
+    new_locations = []
+    for box in all_boxes:
+        old_locations.append((box[0], box[1]))
+        new_locations.append((box[0] + directions[instruction][0], box[1] + directions[instruction][1]))
+    old_locations = set(old_locations)
+    new_locations = set(new_locations)
     for box in all_boxes:
         new_y = box[0] + directions[instruction][0]
         new_x = box[1] + directions[instruction][1]
         warehouse_map_2[new_y][new_x] = box[2]
+    for box in old_locations.difference(new_locations):
         warehouse_map_2[box[0]][box[1]] = "."
 
 
@@ -114,16 +121,36 @@ for instruction in instructions:
     if warehouse_map_2[new_y][new_x] == "#":
         continue
     if warehouse_map_2[new_y][new_x] == "[" or warehouse_map_2[new_y][new_x] == "]":
-        all_boxes = set()
-        should_move = True
-        all_boxes, should_move = check_move_boxes(instruction, y, x, all_boxes)
+        if instruction == ">" or instruction == "<":
+            end_y = new_y
+            end_x = new_x
+            while warehouse_map_2[end_y][end_x] == "[" or warehouse_map_2[end_y][end_x] == "]":
+                end_y += directions[instruction][0]
+                end_x += directions[instruction][1]
+            if warehouse_map_2[end_y][end_x] == "#":
+                continue
+            if warehouse_map_2[end_y][end_x] == ".":
+                print(end_x, x, -directions[instruction][1])
+                for i in range(end_x, x, -directions[instruction][1]):
+                    warehouse_map_2[y][i] = warehouse_map_2[y][i - directions[instruction][1]]
+                warehouse_map_2[y][x] = "."
+                y = new_y
+                x = new_x
+                continue
+        else:
+            all_boxes = set()
+            should_move = True
+            all_boxes, should_move = check_move_boxes(instruction, y, x, all_boxes, should_move)
+            if should_move:
+                move_all_boxes(instruction, all_boxes)
+                warehouse_map_2[y][x] = "."
+                y = new_y
+                x = new_x
+                warehouse_map_2[y][x] = "@"
 
-
-
-
-# final_str = ""
-# for row in warehouse_map:
-#     for col in row:
-#         final_str += col
-#     final_str += "\n"
-# open("2024/Inputs/15 map.txt", "w").write(final_str)
+sum = 0
+for y, str in enumerate(warehouse_map_2):
+    for x, char in enumerate(str):
+        if char == "[":
+            sum += 100 * y + x
+print(f"Part 2: {sum}")
