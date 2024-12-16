@@ -35,10 +35,6 @@ def dijkstra_search(start):
 
     while not frontier.empty():
         current = frontier.get()[1]
-
-        # if current[0] == end[0] and current[1] == end[1]:
-        #     break
-
         for next in neighbors(current[0], current[1]):
             new_cost = cost_so_far[current] + next_cost(current, next)
             if next not in cost_so_far or new_cost < cost_so_far[next]:
@@ -92,24 +88,15 @@ def part2():
     for row in range(len(maze_grid)):
         for col in range(len(maze_grid[0])):
             if maze_grid[row][col] != "#":
-                for dir in "EWNS":
-                    state_from_start = (row, col, dir)
-                    state_from_end = (row, col, flip[dir])
-                    if state_from_start in from_start and state_from_end in from_end:
-                        if from_start[state_from_start] + from_end[state_from_end] == optimal:
-                            result.add((row, col))
-    return result
+                for dir1 in "EWNS":
+                    for dir2 in "EWNS":
+                        state_from_start = (row, col, dir1)
+                        state_from_end = (row, col, dir2)
+                        if state_from_start in from_start and state_from_end in from_end:
+                            direction_change = turn_costs[dir1 + flip[dir2]] * 1000
+                            if from_start[state_from_start] + from_end[state_from_end] + direction_change == optimal:
+                                result.add((row, col))
+    return len(result)
 
 print(f"Part 1: {part1()}")
 print(f"Part 2: {part2()}")
-results = part2()
-final_str = ""
-for y, row in enumerate(maze_grid):
-    for x, col in enumerate(row):
-        if (y, x) in results:
-            final_str += "O"
-        else:
-            final_str += col
-    final_str += "\n"
-open("2024/Inputs/16 map.txt", "w").write(final_str)
-print(len(results))
