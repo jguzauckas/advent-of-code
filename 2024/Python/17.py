@@ -32,26 +32,11 @@ def place_options(num, a):
         i += 1
     return options
 
-def test_a_values(index, options):
-    good_options = []
-    for i, option in enumerate(options):
-        temp_index = -(index + 1)
-        good_value = True
-        while option != 0 and good_value:
-            output = ((((option % 8) ^ 1) ^ 4) ^ (option // (2 ** ((option % 8) ^ 1)))) % 8
-            if output != instructions[temp_index]:
-                good_value = False
-            option = option // 8
-            temp_index += 1
-        if good_value:
-            good_options.append(options[i])
-    return good_options
-
 options = [0]
 for index, num in enumerate(reversed(instructions)):
     new_options = []
     for option in options:
-        options = new_options.extend(test_a_values(index, place_options(num, option)))
+        options = new_options.extend(place_options(num, option))
     options = new_options
 print(f"Part 2: {min(options)}")
 
