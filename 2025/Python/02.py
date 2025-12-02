@@ -29,8 +29,10 @@ for idrange in idranges:
                 for k in range(0,len(num_as_str),j):
                     if str_to_check != num_as_str[k:k+j]:
                         flag = False
+                        break
                 if flag:
                     invalid_ids_2.append(i)
+                    break
 
-print(sum(invalid_ids_1), sum(set(invalid_ids_2)))
+print(sum(invalid_ids_1), sum(invalid_ids_2))
 
