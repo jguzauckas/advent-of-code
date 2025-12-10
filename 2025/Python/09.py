@@ -5,63 +5,110 @@ with open('2025/Inputs/09.txt', 'r') as inp:
 list_inp = [[int(y) for y in x.strip().split(",")] for x in list_inp]
 
 max_area = 0
+max_coordinates = []
 for coordinate_1 in list_inp:
     for coordinate_2 in list_inp:
         area = (abs(coordinate_2[0] - coordinate_1[0]) + 1) * (abs(coordinate_2[1] - coordinate_1[1]) + 1)
         if area > max_area:
             max_area = area
-print(max_area)
+            max_coordinates = [coordinate_1, coordinate_2]
+print(max_area, max_coordinates)
 
-grid = [[False for _ in range(100000)] for _ in range(100000)]
+
+horizontals = {} # Dictionary storing a list of tuples of the form y:[(x1, x2), (x1, x2)]
+verticals = {} # Dictionary storing a list of tuples of the form x:[(y1, y2), (y1, y2)]
+
 for coordinate_1, coordinate_2 in zip(list_inp, list_inp[1:] + list_inp[:1]):
-    grid[coordinate_1[1]][coordinate_1[0]] = True
-    grid[coordinate_2[1]][coordinate_2[0]] = True
-    if coordinate_1[0] == coordinate_2[0]: # x is same, so vertical movement
-        if coordinate_1[1] > coordinate_2[1]: # vertical movement is downward
-            for y in range(coordinate_2[1] + 1, coordinate_1[1]):
-                grid[y][coordinate_1[0]] = True
-        else: # vertical movement is upward
-            for y in range(coordinate_1[1] + 1, coordinate_2[1]):
-                grid[y][coordinate_1[0]] = True
-    else:
-        if coordinate_1[0] > coordinate_2[0]:
-            for x in range(coordinate_2[0] + 1, coordinate_1[0]):
-                grid[coordinate_1[1]][x] = True
+    if coordinate_1[0] == coordinate_2[0]:
+        if coordinate_1[0] in verticals:
+            verticals[coordinate_1[0]].append((min(coordinate_1[1], coordinate_2[1]), max(coordinate_1[1], coordinate_2[1])))
         else:
-            for x in range(coordinate_1[0] + 1, coordinate_2[0]):
-                grid[coordinate_1[1]][x] = True
-to_check = [(50000, 30000), (50000, 70000)]
-while len(to_check) > 0:
-    x, y = to_check.pop()
-    if 0 <= x < 15 and 0 <= y < 15 and grid[y][x] == False:
-        grid[y][x] = True
-        # Add neighbors to list
-        to_check.append((x + 1, y))  # Down
-        to_check.append((x - 1, y))  # Up
-        to_check.append((x, y + 1))  # Right
-        to_check.append((x, y - 1))  # Left
+            verticals[coordinate_1[0]] = [(min(coordinate_1[1], coordinate_2[1]), max(coordinate_1[1], coordinate_2[1]))]
+    else:
+        if coordinate_1[1] in horizontals:
+            horizontals[coordinate_1[1]].append((min(coordinate_1[0], coordinate_2[0]), max(coordinate_1[0], coordinate_2[0])))
+        else:
+            horizontals[coordinate_1[1]] = [(min(coordinate_1[0], coordinate_2[0]), max(coordinate_1[0], coordinate_2[0]))]
+for row in horizontals:
+    horizontals[row].sort()
+for col in verticals:
+    verticals[col].sort()
 
-max_area = 0
-for coordinate_1 in list_inp:
-    for coordinate_2 in list_inp:
-        x1, y1 = coordinate_1
-        x2, y2 = coordinate_2
-        area = (abs(x2 - x1) + 1) * (abs(y2 - y1) + 1)
-        if area > max_area:
-            flag = False
-            x_min, x_max = min(x1, x2), max(x1, x2)
-            y_min, y_max = min(y1, y2), max(y1, y2)
-            for x in range(x_min, x_max + 1):
-                if grid[y1][x] == False or grid[y2][x] == False:
-                    flag = True
-                    break
-            if flag:
+print(horizontals)
+print(verticals)
+
+rows = {} # Dictionary storing a list of tuples of the form y:[(x1, x2), (x1, x2)]
+# These tuples represent valid horizontal areas of the polygon per y value
+
+for row, lines in horizontals.items():
+    all_values = lines[:]
+    for col, verts in verticals.items():
+        for vert in verts:
+            if vert[0] <= row <= vert[1]:
+                all_values.append((col, col))
                 break
-            for y in range(y_min, y_max + 1):
-                if grid[y][x1] == False or grid[y][x2] == False:
-                    flag = True
-                    break
-            if flag:
+    final_values = [lines[0]]
+    for ranges in all_values[1:]:
+        within_range = -1
+        left_overlap_range = -1
+        right_overlap_range = -1
+        for index, final_range in zip(range(len(final_values)), final_values):
+            if final_range[0] <= ranges[0] and ranges[1] <= final_range[1]:
+                within_range = index
                 break
-            max_area = area
-print(max_area)
+            elif final_range[1] >= ranges[0] >= final_range[0]:
+                left_overlap_range = index
+            elif final_range[0] <= ranges[1] <= final_range[1]:
+                right_overlap_range = index
+        if within_range >= 0:
+            continue
+        elif left_overlap_range >= 0 and right_overlap_range >= 0:
+            min_index, max_index = sorted([left_overlap_range, right_overlap_range])
+            final_values[min_index] = (final_values[left_overlap_range][0], final_values[right_overlap_range][1])
+            final_values.pop(max_index)
+        elif left_overlap_range >= 0:
+            final_values[left_overlap_range] = (final_values[left_overlap_range][0], ranges[1])
+        elif right_overlap_range >= 0:
+            final_values[right_overlap_range] = (ranges[0], final_values[right_overlap_range][1])
+        else:
+            final_values.append(ranges)
+    final_values.sort()
+    rows[row] = final_values
+print(min(rows.keys()), max(rows.keys()))
+for i in range(min(rows.keys()), max(rows.keys())):
+    if i not in rows:
+        all_values = []
+        for col, verts in verticals.items():
+            for vert in verts:
+                if vert[0] <= i <= vert[1]:
+                    all_values.append((col, col))
+                    break
+        final_values = [all_values[0]]
+        print(i, final_values)
+        for ranges in all_values[1:]:
+            within_range = -1
+            left_overlap_range = -1
+            right_overlap_range = -1
+            for index, final_range in zip(range(len(final_values)), final_values):
+                if final_range[0] <= ranges[0] and ranges[1] <= final_range[1]:
+                    within_range = index
+                    break
+                elif final_range[1] >= ranges[0] >= final_range[0]:
+                    left_overlap_range = index
+                elif final_range[0] <= ranges[1] <= final_range[1]:
+                    right_overlap_range = index
+            if within_range >= 0:
+                continue
+            elif left_overlap_range >= 0 and right_overlap_range >= 0:
+                min_index, max_index = sorted([left_overlap_range, right_overlap_range])
+                final_values[min_index] = (final_values[left_overlap_range][0], final_values[right_overlap_range][1])
+                final_values.pop(max_index)
+            elif left_overlap_range >= 0:
+                final_values[left_overlap_range] = (final_values[left_overlap_range][0], ranges[1])
+            elif right_overlap_range >= 0:
+                final_values[right_overlap_range] = (ranges[0], final_values[right_overlap_range][1])
+            else:
+                final_values.append(ranges)
+        final_values.sort()
+        rows[i] = final_values
+print(rows)
